@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% block title %}Deteksi Kecambah{% endblock %}
+
+{% block content %}
+<section class="summary-cards">
+    <div class="card stat">
+        <div class="stat-value">{{ ringkasan.total_sesi }}</div>
+        <div class="stat-label">Sesi Deteksi</div>
+    </div>
+    <div class="card stat">
+        <div class="stat-value">{{ ringkasan.total_kecambah }}</div>
+        <div class="stat-label">Total Kecambah</div>
+    </div>
+    <div class="card stat layak">
+        <div class="stat-value">{{ ringkasan.total_layak }}</div>
+        <div class="stat-label">Layak Salur</div>
+    </div>
+    <div class="card stat tidak-layak">
+        <div class="stat-value">{{ ringkasan.total_tidak_layak }}</div>
+        <div class="stat-label">Tidak Layak Salur</div>
+    </div>
+</section>
+
+<section class="card panel">
+    <h2>Unggah / Ambil Foto Kecambah</h2>
+
+    <div class="tabs">
+        <button class="tab-btn active" data-tab="upload">📁 Unggah Gambar</button>
+        <button class="tab-btn" data-tab="camera">📷 Kamera</button>
+    </div>
+
+    <div id="tab-upload" class="tab-content active">
+        <div id="dropzone" class="dropzone">
+            <p>Seret &amp; letakkan gambar di sini, atau klik untuk memilih file</p>
+            <input type="file" id="fileInput" accept="image/*" hidden>
+        </div>
+        <div id="previewWrap" class="preview-wrap" style="display:none;">
+            <img id="previewImg" src="" alt="preview">
+            <button id="btnClearPreview" class="btn-secondary">Ganti Gambar</button>
+        </div>
+    </div>
+
+    <div id="tab-camera" class="tab-content">
+        <video id="video" autoplay playsinline></video>
+        <div class="camera-controls">
+            <button id="btnStartCam" class="btn-secondary">Aktifkan Kamera</button>
+            <button id="btnCapture" class="btn-secondary" disabled>Ambil Foto</button>
+        </div>
+        <canvas id="canvas" hidden></canvas>
+    </div>
+
+    <div class="meta-row">
+        <label>
+            Nama Operator <span class="optional">(opsional)</span>
+            <input type="text" id="inputOperator" placeholder="cth: Budi Santoso" maxlength="80">
+        </label>
+        <label>
+            Catatan / Lokasi Sampel <span class="optional">(opsional)</span>
+            <input type="text" id="inputCatatan" placeholder="cth: Blok A3, sampel pagi" maxlength="150">
+        </label>
+    </div>
+
+    <div class="threshold-row">
+        <label>
+            Confidence Threshold: <span id="confVal">0.35</span>
+            <input type="range" id="confSlider" min="0.05" max="0.95" step="0.05" value="0.35">
+        </label>
+        <label>
+            IoU Threshold: <span id="iouVal">0.45</span>
+            <input type="range" id="iouSlider" min="0.05" max="0.95" step="0.05" value="0.45">
+        </label>
+    </div>
+
+    <button id="btnDeteksi" class="btn-primary" disabled>🔍 Jalankan Deteksi</button>
+    <div id="loadingIndicator" class="loading" style="display:none;">Memproses deteksi, mohon tunggu...</div>
+</section>
+
+<section id="resultSection" class="card panel" style="display:none;">
+    <h2>Hasil Deteksi</h2>
+    <div class="result-grid">
+        <img id="resultImg" src="" alt="hasil deteksi">
+        <div class="result-info">
+            <div class="result-stat total">
+                <span class="dot"></span> Total Terdeteksi: <b id="resTotal">0</b>
+            </div>
+            <div class="result-stat layak">
+                <span class="dot"></span> Layak Salur: <b id="resLayak">0</b>
+            </div>
+            <div class="result-stat tidak-layak">
+                <span class="dot"></span> Tidak Layak Salur: <b id="resTidakLayak">0</b>
+            </div>
+            <div class="result-stat persen">
+                Persentase Kelayakan: <b id="resPersen">0%</b>
+            </div>
+            <a id="btnDownload" class="btn-primary" download="hasil_deteksi.jpg">⬇ Unduh Gambar Hasil</a>
+            <a href="{{ url_for('riwayat') }}" class="btn-secondary">📋 Lihat di Riwayat</a>
+        </div>
+    </div>
+
+    <div class="detail-list-wrap">
+        <h3>Detail Tiap Kecambah Terdeteksi</h3>
+        <div id="detailList" class="detail-list"></div>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+{% endblock %}

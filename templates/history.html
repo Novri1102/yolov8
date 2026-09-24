@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% block title %}Riwayat Deteksi{% endblock %}
+
+{% block content %}
+<section class="summary-cards">
+    <div class="card stat">
+        <div class="stat-value">{{ ringkasan.total_sesi }}</div>
+        <div class="stat-label">Sesi Deteksi</div>
+    </div>
+    <div class="card stat">
+        <div class="stat-value">{{ ringkasan.total_kecambah }}</div>
+        <div class="stat-label">Total Kecambah</div>
+    </div>
+    <div class="card stat layak">
+        <div class="stat-value">{{ ringkasan.total_layak }}</div>
+        <div class="stat-label">Layak Salur</div>
+    </div>
+    <div class="card stat tidak-layak">
+        <div class="stat-value">{{ ringkasan.total_tidak_layak }}</div>
+        <div class="stat-label">Tidak Layak Salur</div>
+    </div>
+</section>
+
+<section class="card panel">
+    <h2>📊 Statistik Deteksi</h2>
+    <div class="chart-grid">
+        <div class="chart-box">
+            <h4>Proporsi Layak vs Tidak Layak</h4>
+            <canvas id="chartPie"></canvas>
+        </div>
+        <div class="chart-box">
+            <h4>Tren Deteksi Harian (14 hari terakhir)</h4>
+            <canvas id="chartTren"></canvas>
+        </div>
+    </div>
+</section>
+
+<section class="card panel">
+    <div class="panel-header-row">
+        <h2>Riwayat Deteksi</h2>
+        <a href="{{ url_for('ekspor_csv') }}" class="btn-secondary">📥 Ekspor CSV</a>
+    </div>
+
+    <div class="filter-bar">
+        <input type="text" id="filterKeyword" placeholder="🔍 Cari nama file / operator...">
+        <label>Dari: <input type="date" id="filterFrom"></label>
+        <label>Sampai: <input type="date" id="filterTo"></label>
+        <button id="btnResetFilter" class="btn-secondary">Reset</button>
+    </div>
+
+    {% if riwayat|length == 0 %}
+    <p class="empty-msg">Belum ada riwayat deteksi. Silakan lakukan deteksi terlebih dahulu.</p>
+    {% else %}
+    <div class="table-wrap">
+        <table class="history-table" id="historyTable">
+            <thead>
+                <tr>
+                    <th>Waktu</th>
+                    <th>Operator</th>
+                    <th>File Asli</th>
+                    <th>Gambar Hasil</th>
+                    <th>Total</th>
+                    <th>Layak</th>
+                    <th>Tidak Layak</th>
+                    <th>% Layak</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in riwayat %}
+                <tr id="row-{{ r.id }}"
+                    data-keyword="{{ ((r.nama_file_asli or '') ~ ' ' ~ (r.operator or '')) | lower }}"
+                    data-date="{{ r.waktu[:10] }}">
+                    <td>{{ r.waktu }}</td>
+                    <td>{{ r.operator or '-' }}</td>
+                    <td>{{ r.nama_file_asli }}</td>
+                    <td><img class="thumb" src="{{ url_for('static', filename='annotated/' ~ r.nama_file_hasil) }}" alt="hasil"></td>
+                    <td>{{ r.total_kecambah }}</td>
+                    <td class="text-layak">{{ r.total_layak }}</td>
+                    <td class="text-tidak-layak">{{ r.total_tidak_layak }}</td>
+                    <td>{{ r.persentase_layak }}%</td>
+                    <td class="row-actions">
+                        <button class="btn-detail" data-id="{{ r.id }}">Detail</button>
+                        <button class="btn-hapus" data-id="{{ r.id }}">Hapus</button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <p id="noResultMsg" class="empty-msg" style="display:none;">Tidak ada data yang cocok dengan filter.</p>
+    </div>
+    {% endif %}
+</section>
+
+<!-- Modal detail -->
+<div id="detailModal" class="modal-overlay">
+    <div class="modal-box">
+        <button id="btnCloseModal" class="modal-close">&times;</button>
+        <h3 id="modalTitle">Detail Deteksi</h3>
+        <img id="modalImg" src="" alt="hasil deteksi">
+        <div id="modalMeta" class="modal-meta"></div>
+        <h4>Rincian per Kecambah</h4>
+        <div id="modalDetailList" class="detail-list"></div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/history.js') }}"></script>
+{% endblock %}
