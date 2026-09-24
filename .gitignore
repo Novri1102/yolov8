@@ -1,0 +1,6 @@
+venv/
+__pycache__/
+*.pyc
+kecambah.db
+static/annotated/*.jpg
+static/uploads/*
